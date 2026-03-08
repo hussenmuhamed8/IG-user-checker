@@ -108,5 +108,33 @@ def refresh_session():
     return jsonify({'status': 'refreshed', 'csrf': csrf_token is not None})
 
 
+@app.route('/debug')
+def debug():
+    test_user = 'zzzzzzzzzzzzzz123456789'
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'x-csrftoken': csrf_token or '',
+        'x-ig-www-claim': '0',
+        'x-requested-with': 'XMLHttpRequest',
+        'x-ig-app-id': '1217981644879628',
+        'x-instagram-ajax': '1015171929',
+        'origin': 'https://www.instagram.com',
+        'referer': 'https://www.instagram.com/accounts/signup/username/?hl=ar',
+    }
+    try:
+        r = session.post(
+            'https://www.instagram.com/api/v1/users/check_username/',
+            params={'hl': 'ar'},
+            data=f'username={test_user}',
+            headers=headers,
+            timeout=10
+        )
+        return jsonify({
+            'status_code': r.status_code,
+            'response': r.text[:500],
+            'csrf': csrf_token
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)})
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
